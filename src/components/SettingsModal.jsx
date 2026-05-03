@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, Edit2, Trash2, Save } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { Edit2, Plus, Save, Trash2, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
-import { getRegistry, addRegistry, updateRegistry, deleteRegistry } from '../services/api';
+import { addRegistry, deleteRegistry, getRegistry, updateRegistry } from '../services/api';
+
+const fieldClass = "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-cyan-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-white md:px-4 md:py-2.5";
 
 const SettingsModal = ({ isOpen, onClose }) => {
     const { t } = useLanguage();
@@ -16,8 +18,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     const fetchBins = async () => {
         setLoading(true);
         try {
-            const data = await getRegistry();
-            setBins(data);
+            setBins(await getRegistry());
         } catch (error) {
             console.error("Failed to fetch bins:", error);
         } finally {
@@ -26,26 +27,18 @@ const SettingsModal = ({ isOpen, onClose }) => {
     };
 
     useEffect(() => {
-        if (isOpen) {
-            fetchBins();
-        }
+        if (isOpen) fetchBins();
     }, [isOpen]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            // Check if we are editing an existing registered bin (has a valid database ID)
-            // Note: 'temp-' IDs are null in currentBin.id due to mapping in handleEdit
             if (isEditing && currentBin.id) {
                 await updateRegistry(currentBin);
             } else {
-                // Determine whether we are "adding" a new bin manually OR
-                // "registering" a discovered bin (which has id=null but might be coming from 'Edit' logic)
-                // In both cases, we need to add a new registry entry.
                 await addRegistry(currentBin);
             }
-            // Reset form and refresh list
             setCurrentBin({ id: null, deviceId: '', name: '', details: '' });
             setIsEditing(false);
             await fetchBins();
@@ -57,13 +50,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
     };
 
     const handleEdit = (bin) => {
-        // If it's a discovered bin (starts with temp-), treat it as a new registration (id=null)
-        // If it's a registered bin, keep the ID for updates
         const isUnregistered = bin.id && bin.id.toString().startsWith('temp-');
-
         setCurrentBin({
             id: isUnregistered ? null : bin.id,
-            deviceId: bin.deviceid || bin.deviceId || '', // Handle potentially disparate naming
+            deviceId: bin.deviceid || bin.deviceId || '',
             name: bin.name || '',
             details: bin.details || ''
         });
@@ -73,8 +63,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
     const handleDelete = async (binId, binName) => {
         const isTemp = binId && binId.toString().startsWith('temp-');
         const confirmMsg = isTemp
-            ? `Are you sure you want to PERMANENTLY DELETE all history data for "${binName}"? This cannot be undone.`
-            : `Are you sure you want to Unregister "${binName}"? The device will revert to a "Discovered" state if it has existing data.`;
+            ? `Are you sure you want to permanently delete all history data for "${binName}"? This cannot be undone.`
+            : `Are you sure you want to unregister "${binName}"? Existing data will remain in history.`;
 
         if (window.confirm(confirmMsg)) {
             setDeletingId(binId);
@@ -97,71 +87,69 @@ const SettingsModal = ({ isOpen, onClose }) => {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.97, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                        exit={{ opacity: 0, scale: 0.97, y: 16 }}
+                        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-slate-900"
                     >
-                        {/* Header */}
-                        <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                            <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                {t('settings')}
-                            </h2>
-                            <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-                                <X className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
+                        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/70 md:p-5">
+                            <h2 className="text-lg font-bold text-slate-950 dark:text-white md:text-xl">{t('settings')}</h2>
+                            <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200/70 dark:hover:bg-slate-800" title="Close">
+                                <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        <div className="p-4 md:p-6 overflow-y-auto">
-                            {/* Form */}
-                            <form onSubmit={handleSubmit} className="mb-6 md:mb-8 p-4 md:p-6 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
-                                <h3 className="text-base md:text-lg font-bold text-indigo-900 dark:text-indigo-300 mb-4 flex items-center gap-2">
-                                    {isEditing ? <Edit2 size={16} className="md:w-[18px] md:h-[18px]" /> : <Plus size={16} className="md:w-[18px] md:h-[18px]" />}
+                        <div className="overflow-y-auto p-4 md:p-5">
+                            <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-900/60 dark:bg-cyan-950/20 md:p-5">
+                                <h3 className="mb-4 flex items-center gap-2 text-base font-bold text-cyan-900 dark:text-cyan-200">
+                                    {isEditing ? <Edit2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                                     {isEditing ? (currentBin.id ? t('editBin') : 'Register Discovered Bin') : t('addBin')}
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">{t('binName')}</label>
+
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="space-y-1.5">
+                                        <label className="ml-1 text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('binName')}</label>
                                         <input
                                             type="text"
                                             required
                                             placeholder="Main Lobby Bin"
-                                            className="w-full px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm md:text-base"
+                                            className={fieldClass}
                                             value={currentBin.name}
                                             onChange={(e) => setCurrentBin({ ...currentBin, name: e.target.value })}
                                         />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">{t('deviceIdLabel')}</label>
+                                    <div className="space-y-1.5">
+                                        <label className="ml-1 text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('deviceIdLabel')}</label>
                                         <input
                                             type="text"
                                             required
                                             disabled={isEditing}
                                             placeholder="BIN001"
-                                            className="w-full px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                                            className={fieldClass}
                                             value={currentBin.deviceId}
                                             onChange={(e) => setCurrentBin({ ...currentBin, deviceId: e.target.value })}
                                         />
                                     </div>
-                                    <div className="md:col-span-2 space-y-1">
-                                        <label className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1">{t('binDetails')}</label>
+                                    <div className="space-y-1.5 md:col-span-2">
+                                        <label className="ml-1 text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('binDetails')}</label>
                                         <input
                                             type="text"
                                             placeholder="Floor 1, West Wing"
-                                            className="w-full px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm md:text-base"
+                                            className={fieldClass}
                                             value={currentBin.details}
                                             onChange={(e) => setCurrentBin({ ...currentBin, details: e.target.value })}
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-4 flex justify-end gap-3">
+
+                                <div className="mt-4 flex justify-end gap-2">
                                     {isEditing && (
                                         <button
                                             type="button"
                                             onClick={resetForm}
-                                            className="px-4 md:px-6 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold transition-all text-sm md:text-base"
+                                            className="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                                             disabled={submitting}
                                         >
                                             {t('cancel')}
@@ -170,21 +158,20 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="px-4 md:px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-100 dark:shadow-none flex items-center gap-2 transition-all disabled:opacity-70 disabled:cursor-wait text-sm md:text-base"
+                                        className="flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800 disabled:cursor-wait disabled:opacity-70 dark:bg-cyan-600 dark:hover:bg-cyan-500"
                                     >
-                                        <Save size={16} className="md:w-[18px] md:h-[18px]" />
+                                        <Save className="h-4 w-4" />
                                         {submitting ? 'Saving...' : t('save')}
                                     </button>
                                 </div>
                             </form>
 
-                            {/* List */}
                             <div className="space-y-3">
-                                <h3 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{t('allBins')}</h3>
+                                <h3 className="ml-1 text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('allBins')}</h3>
                                 {loading ? (
-                                    <div className="py-10 text-center animate-pulse text-slate-400 text-sm">{t('loading')}...</div>
+                                    <div className="py-10 text-center text-sm text-slate-400">{t('loading')}...</div>
                                 ) : bins.length === 0 ? (
-                                    <div className="py-10 text-center text-slate-400 bg-slate-50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-sm">
+                                    <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-950/40">
                                         {t('noBins')}
                                     </div>
                                 ) : (
@@ -192,38 +179,38 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                         {Array.isArray(bins) && bins.map(bin => {
                                             const isTemp = bin.id && bin.id.toString().startsWith('temp-');
                                             return (
-                                                <div key={bin.id} className="p-3 md:p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700 flex items-center justify-between group hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all shadow-sm">
+                                                <div key={bin.id} className="group flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-cyan-200 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-cyan-900/60 md:p-4">
                                                     <div className="min-w-0 pr-2">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <h4 className="font-bold text-slate-800 dark:text-white truncate max-w-[150px] md:max-w-xs text-sm md:text-base">{bin.name}</h4>
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <h4 className="max-w-[160px] truncate text-sm font-bold text-slate-900 dark:text-white md:max-w-xs md:text-base">{bin.name}</h4>
                                                             {isTemp && (
-                                                                <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Discovered</span>
+                                                                <span className="whitespace-nowrap rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Discovered</span>
                                                             )}
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono uppercase tracking-wider shrink-0">{bin.deviceid || bin.deviceId}</span>
-                                                            {bin.details && <span className="truncate hidden sm:inline">• {bin.details}</span>}
+                                                        <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                                                            <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 font-mono uppercase tracking-wider dark:bg-slate-800 dark:text-slate-300">{bin.deviceid || bin.deviceId}</span>
+                                                            {bin.details && <span className="hidden truncate sm:inline">- {bin.details}</span>}
                                                         </div>
-                                                        {bin.details && <div className="text-xs text-slate-500 sm:hidden truncate mt-0.5">{bin.details}</div>}
+                                                        {bin.details && <div className="mt-1 truncate text-xs text-slate-500 sm:hidden">{bin.details}</div>}
                                                     </div>
-                                                    <div className="flex items-center gap-1 shrink-0">
+                                                    <div className="flex shrink-0 items-center gap-1">
                                                         <button
                                                             onClick={() => handleEdit(bin)}
-                                                            className="p-1.5 md:p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
+                                                            className="rounded-lg p-2 text-cyan-700 transition hover:bg-cyan-50 dark:text-cyan-300 dark:hover:bg-cyan-950/40"
                                                             title="Edit"
                                                         >
-                                                            <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
+                                                            <Edit2 className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(bin.id, bin.name)}
-                                                            className="p-1.5 md:p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all disabled:opacity-50"
+                                                            className="rounded-lg p-2 text-rose-600 transition hover:bg-rose-50 disabled:opacity-50 dark:hover:bg-rose-950/40"
                                                             disabled={deletingId === bin.id}
                                                             title="Delete"
                                                         >
                                                             {deletingId === bin.id ? (
-                                                                <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-rose-600 border-t-transparent rounded-full animate-spin" />
+                                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-600 border-t-transparent" />
                                                             ) : (
-                                                                <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
+                                                                <Trash2 className="h-4 w-4" />
                                                             )}
                                                         </button>
                                                     </div>

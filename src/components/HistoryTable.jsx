@@ -1,11 +1,9 @@
-import React from 'react';
 import { Clock } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const HistoryTable = ({ historyData }) => {
     const { t } = useLanguage();
 
-    // Translate status
     const getStatusText = (status) => {
         if (status === 'EMPTY') return t('empty');
         if (status === 'HALF') return t('half');
@@ -13,58 +11,66 @@ const HistoryTable = ({ historyData }) => {
         return status;
     };
 
+    const getStatusClass = (status) => {
+        if (status === 'FULL') return 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300';
+        if (status === 'HALF') return 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300';
+        return 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300';
+    };
+
+    const getBarClass = (status) => {
+        if (status === 'FULL') return 'bg-rose-500';
+        if (status === 'HALF') return 'bg-amber-500';
+        return 'bg-emerald-500';
+    };
+
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col h-full">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-indigo-500" />
+        <div className="flex h-full min-h-[520px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex flex-col gap-2 border-b border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/70 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="flex items-center gap-2 text-base font-bold text-slate-950 dark:text-white">
+                    <Clock className="h-5 w-5 text-cyan-700 dark:text-cyan-300" />
                     {t('recentActivity')}
                 </h3>
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t('lastRecords')}</span>
+                <span className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{t('lastRecords')}</span>
             </div>
 
-            <div className="overflow-y-auto overflow-x-auto flex-1 h-full scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
-                <table className="w-full text-left border-collapse min-w-[500px]">
-                    <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 z-10 backdrop-blur-sm">
+            <div className="flex-1 overflow-auto">
+                <table className="w-full min-w-[620px] border-collapse text-left">
+                    <thead className="sticky top-0 z-10 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                         <tr>
-                            <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('time')}</th>
-                            <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('device')}</th>
-                            <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fillLevel')}</th>
-                            <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('status')}</th>
+                            <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{t('time')}</th>
+                            <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{t('device')}</th>
+                            <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{t('fillLevel')}</th>
+                            <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{t('status')}</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {Array.isArray(historyData) && historyData.map((record, index) => {
                             const date = new Date(record.createdAt);
                             const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                             const dateStr = date.toLocaleDateString();
-
-                            let statusColor = 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-900/30 dark:text-emerald-400';
-                            if (record.status === 'HALF') statusColor = 'text-amber-600 bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-900/30 dark:text-amber-400';
-                            if (record.status === 'FULL') statusColor = 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-900/20 dark:border-rose-900/30 dark:text-rose-400';
+                            const fill = Math.min(Math.max(Number(record.fillPercentage) || 0, 0), 100);
 
                             return (
-                                <tr key={record.id || index} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors">
-                                    <td className="p-4">
-                                        <div className="font-medium text-slate-700 dark:text-slate-300">{timeStr}</div>
-                                        <div className="text-xs text-slate-400 dark:text-slate-500">{dateStr}</div>
+                                <tr key={record.id || index} className="transition hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                                    <td className="px-4 py-3 align-middle">
+                                        <div className="font-medium text-slate-800 dark:text-slate-200">{timeStr}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">{dateStr}</div>
                                     </td>
-                                    <td className="p-4 text-slate-600 dark:text-slate-400 font-mono text-sm">
-                                        {record.deviceId}
+                                    <td className="px-4 py-3 align-middle">
+                                        <span className="rounded-md bg-slate-100 px-2 py-1 font-mono text-xs uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                            {record.deviceId}
+                                        </span>
                                     </td>
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-24 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full ${record.status === 'FULL' ? 'bg-rose-500' : record.status === 'HALF' ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                                                    style={{ width: `${record.fillPercentage}%` }}
-                                                ></div>
+                                    <td className="px-4 py-3 align-middle">
+                                        <div className="flex min-w-44 items-center gap-3">
+                                            <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                                <div className={`h-full rounded-full ${getBarClass(record.status)}`} style={{ width: `${fill}%` }} />
                                             </div>
-                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{record.fillPercentage}%</span>
+                                            <span className="w-10 text-right text-sm font-semibold text-slate-800 dark:text-slate-200">{fill}%</span>
                                         </div>
                                     </td>
-                                    <td className="p-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusColor}`}>
+                                    <td className="px-4 py-3 align-middle">
+                                        <span className={`inline-flex min-w-16 justify-center rounded-md border px-2.5 py-1 text-xs font-bold uppercase ${getStatusClass(record.status)}`}>
                                             {getStatusText(record.status)}
                                         </span>
                                     </td>
@@ -73,7 +79,7 @@ const HistoryTable = ({ historyData }) => {
                         })}
                         {(!Array.isArray(historyData) || historyData.length === 0) && (
                             <tr>
-                                <td colSpan="4" className="p-8 text-center text-slate-400 dark:text-slate-500">
+                                <td colSpan="4" className="px-4 py-16 text-center text-sm text-slate-500 dark:text-slate-400">
                                     {t('noHistory')}
                                 </td>
                             </tr>

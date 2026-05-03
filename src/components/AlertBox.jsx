@@ -13,14 +13,14 @@ const AlertBox = ({ isVisible }) => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="fixed top-6 right-6 z-50 w-96 bg-red-50 dark:bg-red-900/90 border-l-4 border-red-500 shadow-2xl rounded-r-lg p-4 flex items-start gap-4 backdrop-blur-md"
+                    className="fixed left-4 right-4 top-4 z-50 flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 p-4 shadow-lg dark:border-rose-900/60 dark:bg-rose-950/90 sm:left-auto sm:w-[28rem]"
                 >
-                    <div className="bg-red-100 dark:bg-red-800 p-2 rounded-full flex-shrink-0">
-                        <AlertTriangle className="text-red-600 dark:text-red-200 w-6 h-6" />
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900">
+                        <AlertTriangle className="h-5 w-5 text-rose-700 dark:text-rose-200" />
                     </div>
                     <div className="flex-1">
-                        <h4 className="text-red-800 dark:text-red-100 font-bold text-lg">{t('criticalAlert')}</h4>
-                        <p className="text-red-700 dark:text-red-200 text-sm mt-1">
+                        <h4 className="font-bold text-rose-900 dark:text-rose-100">{t('criticalAlert')}</h4>
+                        <p className="mt-1 text-sm leading-5 text-rose-700 dark:text-rose-200">
                             {t('alertMessage')}
                         </p>
                     </div>

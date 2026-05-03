@@ -7,13 +7,13 @@ const ThemeToggle = () => {
     return (
         <button
             onClick={toggleTheme}
-            className="p-2 rounded-full transition-colors duration-200 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             aria-label="Toggle theme"
         >
             {theme === 'light' ? (
-                <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                <Moon className="h-5 w-5" />
             ) : (
-                <Sun className="w-5 h-5 text-amber-500 hover:text-amber-400" />
+                <Sun className="h-5 w-5 text-amber-500" />
             )}
         </button>
     );

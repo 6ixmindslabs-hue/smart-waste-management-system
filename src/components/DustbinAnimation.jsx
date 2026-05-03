@@ -41,16 +41,16 @@ const DustbinAnimation = ({ fillPercentage }) => {
     const color = getColor(level);
 
     return (
-        <div className="flex justify-center items-center py-4 select-none">
+        <div className="flex items-center justify-center py-2 select-none">
             <motion.div
-                className="relative w-32 h-44 cursor-pointer"
+                className="relative h-40 w-28 cursor-pointer sm:h-44 sm:w-32"
                 onHoverStart={() => setIsHovered(true)}
                 onHoverEnd={() => setIsHovered(false)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
                 <motion.div
-                    className="absolute -right-8 top-0 z-30 bg-white dark:bg-slate-700 shadow-lg rounded-full px-2 py-1 text-xs font-black border border-slate-100 dark:border-slate-600"
+                    className="absolute -right-6 top-0 z-30 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-black shadow-sm dark:border-slate-700 dark:bg-slate-800"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1, rotate: [0, 10, 0] }}
                     transition={{ type: "spring", stiffness: 200, damping: 10 }}
@@ -60,7 +60,7 @@ const DustbinAnimation = ({ fillPercentage }) => {
 
                 {level >= 80 && (
                     <motion.div
-                        className="absolute inset-0 rounded-b-xl bg-red-400 dark:bg-red-600 blur-xl -z-10"
+                        className="absolute inset-0 -z-10 rounded-b-lg bg-rose-400 blur-xl dark:bg-rose-600"
                         animate={{ opacity: [0.2, 0.6, 0.2], scale: [1, 1.1, 1] }}
                         transition={{ repeat: Infinity, duration: 2 }}
                     />
@@ -79,7 +79,7 @@ const DustbinAnimation = ({ fillPercentage }) => {
                     </svg>
                 </motion.div>
 
-                <div className="relative w-full h-full overflow-hidden rounded-b-xl border-[3px] border-slate-700 dark:border-slate-500 bg-slate-50 dark:bg-slate-800 shadow-2xl">
+                <div className="relative h-full w-full overflow-hidden rounded-b-lg border-[3px] border-slate-700 bg-slate-50 shadow-lg dark:border-slate-500 dark:bg-slate-800">
                     <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,#cbd5e1_1px,transparent_1px)] dark:bg-[linear-gradient(45deg,#475569_1px,transparent_1px)] [background-size:10px_10px]"></div>
 
                     <motion.div
