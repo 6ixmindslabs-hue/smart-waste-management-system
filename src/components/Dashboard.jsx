@@ -18,12 +18,12 @@ const MetricCard = ({ iconNode, label, value, tone = 'slate' }) => {
     };
 
     return (
-        <div className={`min-w-0 rounded-lg border p-4 shadow-sm ${tones[tone]}`}>
-            <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{label}</span>
+        <div className={`min-w-0 rounded-lg border p-3 shadow-sm sm:p-4 ${tones[tone]}`}>
+            <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-[11px] font-semibold uppercase text-slate-500 dark:text-slate-400 sm:text-xs">{label}</span>
                 {iconNode}
             </div>
-            <div className="mt-2 text-2xl font-bold leading-none">{value}</div>
+            <div className="mt-2 text-xl font-bold leading-none sm:text-2xl">{value}</div>
         </div>
     );
 };
@@ -97,21 +97,21 @@ const Dashboard = () => {
         <div className="min-h-screen">
             <AlertBox isVisible={isAnyFull} />
 
-            <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-                <header className="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-5">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-4 lg:px-8 lg:py-6">
+                <header className="rounded-lg border border-slate-200 bg-white px-3 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-5">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div className="min-w-0">
                             <p className="text-xs font-semibold uppercase text-cyan-700 dark:text-cyan-300">IoT Monitoring Dashboard</p>
-                            <h1 className="mt-1 text-2xl font-bold tracking-normal text-slate-950 dark:text-white sm:text-3xl">
+                            <h1 className="mt-1 text-[1.65rem] font-bold leading-tight tracking-normal text-slate-950 dark:text-white sm:text-3xl">
                                 {t('smart')} <span className="text-cyan-700 dark:text-cyan-300">{t('waste')}</span>
                             </h1>
-                            <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{t('subtitle')}</p>
+                            <p className="mt-1 max-w-2xl text-sm leading-5 text-slate-500 dark:text-slate-400">{t('subtitle')}</p>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                            <div className="flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 sm:text-sm">
+                        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+                            <div className="col-span-4 flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 sm:col-span-1 sm:text-sm">
                                 <RefreshCw className="h-4 w-4 animate-spin text-cyan-700 dark:text-cyan-300" style={{ animationDuration: '3s' }} />
-                                <span className="whitespace-nowrap">{t('lastUpdated')}: {lastUpdated.toLocaleTimeString()}</span>
+                                <span className="min-w-0 truncate">{t('lastUpdated')}: {lastUpdated.toLocaleTimeString()}</span>
                             </div>
                             <LanguageToggle />
                             <button
@@ -126,7 +126,7 @@ const Dashboard = () => {
                     </div>
                 </header>
 
-                <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <section className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
                     <MetricCard iconNode={<Trash2 className="h-4 w-4 shrink-0" />} label="Total bins" value={metrics.totalBins} tone="cyan" />
                     <MetricCard iconNode={<TriangleAlert className="h-4 w-4 shrink-0" />} label="Full bins" value={metrics.fullBins} tone={metrics.fullBins ? 'rose' : 'slate'} />
                     <MetricCard iconNode={<Activity className="h-4 w-4 shrink-0" />} label="Half bins" value={metrics.halfBins} tone="amber" />
@@ -135,14 +135,14 @@ const Dashboard = () => {
 
                 <SettingsModal isOpen={isSettingsOpen} onClose={() => { setIsSettingsOpen(false); fetchData(); }} />
 
-                <main className="grid min-h-0 grid-cols-1 gap-5 xl:grid-cols-[minmax(320px,380px)_1fr]">
+                <main className="grid min-h-0 grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-[minmax(320px,380px)_1fr]">
                     <section className="min-w-0">
                         {loading && binsStatus.length === 0 ? (
                             <div className="flex h-64 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-cyan-700 dark:border-slate-800 dark:border-t-cyan-300"></div>
                             </div>
                         ) : binsStatus.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-1">
                                 {binsStatus.map((bin, idx) => (
                                     <StatusCard key={`${bin.deviceId || bin.friendlyName || 'bin'}-${idx}`} data={bin} />
                                 ))}
@@ -155,7 +155,7 @@ const Dashboard = () => {
                         )}
                     </section>
 
-                    <section className="min-h-[520px] min-w-0">
+                    <section className="min-w-0 sm:min-h-[520px]">
                         <HistoryTable historyData={history} />
                     </section>
                 </main>

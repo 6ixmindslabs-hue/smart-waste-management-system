@@ -87,28 +87,28 @@ const SettingsModal = ({ isOpen, onClose }) => {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.97, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.97, y: 16 }}
-                        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-slate-900"
+                        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-lg bg-white shadow-2xl dark:bg-slate-900 sm:max-h-[90vh] sm:rounded-lg"
                     >
-                        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/70 md:p-5">
+                        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/70 sm:p-4 md:p-5">
                             <h2 className="text-lg font-bold text-slate-950 dark:text-white md:text-xl">{t('settings')}</h2>
                             <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200/70 dark:hover:bg-slate-800" title="Close">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        <div className="overflow-y-auto p-4 md:p-5">
-                            <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-900/60 dark:bg-cyan-950/20 md:p-5">
+                        <div className="overflow-y-auto p-3 sm:p-4 md:p-5">
+                            <form onSubmit={handleSubmit} className="mb-5 rounded-lg border border-cyan-200 bg-cyan-50/70 p-3 dark:border-cyan-900/60 dark:bg-cyan-950/20 sm:p-4 md:p-5">
                                 <h3 className="mb-4 flex items-center gap-2 text-base font-bold text-cyan-900 dark:text-cyan-200">
                                     {isEditing ? <Edit2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                                     {isEditing ? (currentBin.id ? t('editBin') : 'Register Discovered Bin') : t('addBin')}
                                 </h3>
 
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                     <div className="space-y-1.5">
                                         <label className="ml-1 text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('binName')}</label>
                                         <input
@@ -144,12 +144,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-4 flex justify-end gap-2">
+                                <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
                                     {isEditing && (
                                         <button
                                             type="button"
                                             onClick={resetForm}
-                                            className="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                                            className="rounded-lg px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 sm:py-2"
                                             disabled={submitting}
                                         >
                                             {t('cancel')}
@@ -158,7 +158,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800 disabled:cursor-wait disabled:opacity-70 dark:bg-cyan-600 dark:hover:bg-cyan-500"
+                                        className="flex items-center justify-center gap-2 rounded-lg bg-cyan-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800 disabled:cursor-wait disabled:opacity-70 dark:bg-cyan-600 dark:hover:bg-cyan-500 sm:py-2"
                                     >
                                         <Save className="h-4 w-4" />
                                         {submitting ? 'Saving...' : t('save')}

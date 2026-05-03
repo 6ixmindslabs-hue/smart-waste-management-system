@@ -41,16 +41,16 @@ const DustbinAnimation = ({ fillPercentage }) => {
     const color = getColor(level);
 
     return (
-        <div className="flex items-center justify-center py-2 select-none">
+        <div className="flex items-center justify-center py-1 sm:py-2 select-none">
             <motion.div
-                className="relative h-40 w-28 cursor-pointer sm:h-44 sm:w-32"
+                className="relative h-32 w-24 cursor-pointer sm:h-44 sm:w-32"
                 onHoverStart={() => setIsHovered(true)}
                 onHoverEnd={() => setIsHovered(false)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
                 <motion.div
-                    className="absolute -right-6 top-0 z-30 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-black shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                    className="absolute -right-4 top-0 z-30 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-black shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:-right-6 sm:px-2 sm:py-1 sm:text-[10px]"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1, rotate: [0, 10, 0] }}
                     transition={{ type: "spring", stiffness: 200, damping: 10 }}
@@ -122,11 +122,11 @@ const DustbinAnimation = ({ fillPercentage }) => {
                         key={level}
                         initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
                         animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                        className={`text-4xl font-black ${level > 55 ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}
+                        className={`text-3xl font-black sm:text-4xl ${level > 55 ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}
                         style={{ textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                     >
                         {Math.round(level)}
-                        <span className="text-xl align-top">%</span>
+                        <span className="text-base align-top sm:text-xl">%</span>
                     </motion.span>
                 </div>
             </motion.div>
