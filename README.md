@@ -1,24 +1,148 @@
 # Smart Waste Management System
 
-A complete IoT-enabled Garbage Overflow Management System.
+A full-stack IoT dashboard for monitoring garbage-bin fill levels, managing registered dustbins, and reviewing recent status history. The system is designed for an ESP32 or any HTTP client to send fill-level readings to a backend API, store them in Supabase, and display live operational status in a responsive React dashboard.
 
-## Architecture
-- **Frontend**: React (Vite) + Tailwind CSS
-- **Backend**: Node.js (Vercel Serverless Functions)
-- **Database**: Supabase (PostgreSQL)
-- **IoT**: ESP32 Integration
+## Live Deployment
+
+Live URL: [https://invoice-generatorsystem.netlify.app/](https://invoice-generatorsystem.netlify.app/)
+
+## Screenshots
+
+Screenshots below use sample local API data so every dashboard state is visible.
+
+![Desktop dashboard](public/screenshots/dashboard.png)
+
+![Mobile dashboard](public/screenshots/mobile-dashboard.png)
+
+## Features
+
+- Real-time dashboard polling for dustbin status updates.
+- Fill-level metrics for total bins, full bins, half-full bins, and average fill.
+- Automatic status classification: `EMPTY`, `HALF`, and `FULL`.
+- Critical overflow alert when a bin exceeds the full threshold.
+- Animated dustbin cards with capacity bars and device details.
+- Recent activity table showing the latest fill-level records.
+- Dustbin registry management for adding, editing, unregistering, and deleting discovered bins.
+- Responsive desktop and mobile layouts.
+- Light/dark theme toggle.
+- Language toggle for English/Tamil dashboard labels.
+- Supabase PostgreSQL persistence for readings and registered dustbins.
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, Vite 7, Tailwind CSS 4 |
+| UI/UX | Framer Motion, Lucide React |
+| API client | Axios |
+| Backend | Node.js, Express local dev server, Vercel-style API route handlers |
+| Database | Supabase PostgreSQL |
+| Deployment support | Vite build output, `vercel.json`, same-origin `/api` routes |
+| IoT integration | ESP32 or any device that can send HTTP POST requests |
+
+## Architecture Overview
+
+```text
+[ESP32 / Sensor Client]
+        |
+        | POST /api/bin/update
+        v
+[API Route Handlers]
+        |
+        | Supabase client
+        v
+[Supabase PostgreSQL]
+        ^
+        | GET /api/bin/status
+        | GET /api/bin/history
+        | GET /api/registry/list
+        |
+[React Dashboard]
+```
+
+### Data Flow
+
+1. A sensor client calculates a bin fill percentage.
+2. The client sends `{ "deviceId": "BIN001", "fillPercentage": 75 }` to `/api/bin/update`.
+3. The backend classifies the reading:
+   - `0-30`: `EMPTY`
+   - `31-80`: `HALF`
+   - `81-100`: `FULL`
+4. The reading is stored in the `bins` table in Supabase.
+5. The dashboard polls the registry, latest bin status, and history endpoints.
+6. Users manage friendly bin names and locations through the registry modal.
+
+## Project Structure
+
+```text
+.
+|-- api/
+|   |-- bin/
+|   |   |-- update.js
+|   |   |-- status.js
+|   |   `-- history.js
+|   `-- registry/
+|       |-- add.js
+|       |-- list.js
+|       |-- update.js
+|       `-- delete.js
+|-- lib/
+|   `-- supabaseClient.js
+|-- public/
+|   `-- screenshots/
+|-- scripts/
+|   `-- verify_backend.js
+|-- src/
+|   |-- components/
+|   |-- context/
+|   |-- services/
+|   |-- App.jsx
+|   `-- main.jsx
+|-- supabase_schema.sql
+|-- api-server.js
+|-- package.json
+|-- vite.config.js
+`-- vercel.json
+```
 
 ## Setup Instructions
 
-### 1. Database (Supabase)
-1. Create a new Supabase project.
-2. Go to the SQL Editor and run the contents of `supabase_schema.sql`.
-3. Go to **Project Settings > API** and copy:
-   - Project URL
-   - `anon` public key
+### Prerequisites
 
-### 2. Environment Variables
-Create a `.env` file in the root directory with your keys:
+- Node.js `20.19+` or `22.12+`
+- npm
+- Supabase project
+- Optional: ESP32 hardware or another HTTP client for sending readings
+
+### 1. Clone and Install
+
+```bash
+git clone <your-repository-url>
+cd smart-waste-management-system
+npm install
+```
+
+### 2. Create the Supabase Database
+
+1. Create or open a Supabase project.
+2. Go to the Supabase SQL Editor.
+3. Run the full contents of `supabase_schema.sql`.
+
+This creates:
+
+- `bins`: stores sensor readings, status, and timestamps.
+- `dustbin_registry`: stores registered device IDs, display names, and details.
+
+### 3. Configure Environment Variables
+
+Create a local `.env` file from the example:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Fill in your Supabase values:
+
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -26,90 +150,143 @@ SUPABASE_URL=your_supabase_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 3. Install Dependencies
-```bash
-npm install
-```
+Do not expose a Supabase `service_role` key in the frontend.
 
 ### 4. Run Locally
-To run the full stack (Frontend + Backend Functions):
-```bash
-npm run dev:full
-```
 
-If you only want to run the frontend UI (API calls will fail unless another backend is running):
+Start the frontend and local API server together:
+
 ```bash
 npm run dev
 ```
 
-Useful checks:
+Default local URLs:
+
+- Frontend: `http://localhost:5173`
+- Local API server: `http://localhost:3000`
+
+You can also run each side separately:
+
+```bash
+npm run dev:frontend
+npm run dev:backend
+```
+
+For a Vercel-like local environment:
+
+```bash
+npm run dev:full
+```
+
+### 5. Verify the Backend
+
+After the backend is running:
+
+```bash
+npm run verify:backend -- http://localhost:3000
+```
+
+For a deployed backend:
+
+```bash
+npm run verify:backend -- https://your-domain.example
+```
+
+## API Reference
+
+### Submit Bin Reading
+
+```http
+POST /api/bin/update
+Content-Type: application/json
+```
+
+```json
+{
+  "deviceId": "BIN001",
+  "fillPercentage": 85
+}
+```
+
+### Get Latest Status
+
+```http
+GET /api/bin/status?deviceId=BIN001
+```
+
+### Get Recent History
+
+```http
+GET /api/bin/history
+GET /api/bin/history?deviceId=BIN001
+```
+
+### Manage Dustbin Registry
+
+```http
+GET    /api/registry/list
+POST   /api/registry/add
+PUT    /api/registry/update
+DELETE /api/registry/delete?id=<registry-id>
+```
+
+Example registry payload:
+
+```json
+{
+  "deviceId": "BIN001",
+  "name": "Main Lobby Bin",
+  "details": "Floor 1"
+}
+```
+
+## ESP32 Request Example
+
+Use your deployed API URL as the hardware server URL:
+
+```cpp
+const char* serverUrl = "https://your-domain.example/api/bin/update";
+```
+
+Payload expected by the backend:
+
+```json
+{
+  "deviceId": "BIN001",
+  "fillPercentage": 75
+}
+```
+
+## Build and Deployment
+
+Run checks before deploying:
+
 ```bash
 npm run lint
 npm run build
 ```
 
-### 5. Deploy to Vercel
-See `DEPLOYMENT.md` for the full Vercel deployment guide.
+The frontend build output is generated in `dist/`.
 
-Short version:
-1. Run `supabase_schema.sql` in Supabase SQL Editor.
-2. Push this code to GitHub.
-3. Import the repository in Vercel.
-4. Add `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `VITE_SUPABASE_URL`, and `VITE_SUPABASE_ANON_KEY`.
-5. Deploy.
+For a static frontend deployment, use:
 
-Your ESP32 hardware URL will be:
-```text
-https://your-project-name.vercel.app/api/bin/update
-```
+- Build command: `npm run build`
+- Publish directory: `dist`
 
-Test a deployed backend:
+Important: this app uses same-origin `/api` routes. A deployment must also provide the backend API routes or proxy `/api/*` to a deployed backend. This repository includes `vercel.json` and Vercel-style route handlers under `api/`.
+
+To deploy with the included Vercel workflow:
+
 ```bash
-npm run verify:backend -- https://your-project-name.vercel.app
+npm run deploy
 ```
 
-## API Endpoints
+Set these environment variables in the deployment platform:
 
-- `POST /api/bin/update`: Receives data from ESP32.
-  - Body: `{ "deviceId": "BIN001", "fillPercentage": 85 }`
-- `GET /api/bin/status`: Returns current status.
-- `GET /api/bin/history`: Returns last 20 records.
-
-## ESP32 Reference Code (C++ / Arduino)
-
-```cpp
-#include <WiFi.h>
-#include <HTTPClient.h>
-
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* serverUrl = "https://your-project.vercel.app/api/bin/update";
-
-void setup() {
-  Serial.begin(115200);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting...");
-  }
-}
-
-void loop() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverUrl);
-    http.addHeader("Content-Type", "application/json");
-    
-    // Simulate sensor data
-    int fill = random(0, 100); 
-    String payload = "{\"deviceId\": \"BIN001\", \"fillPercentage\": " + String(fill) + "}";
-    
-    int httpResponseCode = http.POST(payload);
-    Serial.print("HTTP Code: ");
-    Serial.println(httpResponseCode);
-    
-    http.end();
-  }
-  delay(5000);
-}
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
